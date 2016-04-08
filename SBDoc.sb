@@ -1,8 +1,9 @@
 ''' SBDoc - Small Basic Document Generator
-''' Version 0.1b
+''' Version 0.2b
 ''' Copyright © 2016 Nonki Takahashi.  The MIT License.
+''' Program ID NPW862
 '
-ver = "0.1b"
+ver = "0.2b"
 TextWindow.Title = "SBDoc " + ver
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 WQ = Text.GetCharacter(34)
@@ -32,7 +33,7 @@ EndIf
 Sub Footer
   ''' Generate footer
   ''' param ofile - output file
-  html = html + LT + "hr>" + CRLF
+  html = LT + "hr>" + CRLF
   html = html + LT + "p>This document is created by SBDoc " + ver + "." + CRLF
   html = html + LT + "/p>" + CRLF
   html = html + LT + "/body>" + CRLF
@@ -78,13 +79,12 @@ Sub GenDoc
   files = File.GetFiles(src)
   nFiles = Array.GetItemCount(files)
   iFiles = Array.GetAllIndices(files)
-  html = ""
   For i = 1 To nFiles
     ifile = files[iFiles[i]]
     lfile = Text.ConvertToLowerCase(ifile)
     If Text.EndsWith(lfile, ".sb") Or Text.EndsWith(lfile, ".smallbasic") Then 
       TextWindow.WriteLine(ifile)
-      html = html + LT + "h1>" + ifile + LT + "/h1>" + CRLF
+      html = LT + "h1>" + ifile + LT + "/h1>" + CRLF
       buf = File.ReadContents(ifile)
       p = 1
       File_ReadLine()
