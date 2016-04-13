@@ -6,7 +6,7 @@ Version 0.2b
 Generates HTML documents from Small Basic source file.
 
 ## System Requirements
-- Windows XP or later
+- Windows Vista or later
 - .NET Framework 4.5 or later
 
 ## Version History
