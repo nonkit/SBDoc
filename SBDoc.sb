@@ -1,35 +1,90 @@
 ''' SBDoc - Small Basic Document Generator
-''' Version 0.2b
+''' Version 0.3b
 ''' Copyright © 2016 Nonki Takahashi.  The MIT License.
-''' Program ID NPW862
+''' Program ID NPW862-0
 '
-ver = "0.2b"
-TextWindow.Title = "SBDoc " + ver
+ver = "0.3b"
+GraphicsWindow.Title = "SBDoc " + ver
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 WQ = Text.GetCharacter(34)
 LT = "<"
 Not = "False=True;True=False;"
-TextWindow.WriteLine("SBDoc - Small Basic Document Generator")
-TextWindow.WriteLine("Version " + ver)
-GetArgs()
-If showHelp Then
-  Help()
-Else
-  ofile = dest + "\index.html"
-  Header()
-  src = source
-  GenDoc()
-  If findSub Then
-    folders = File.GetDirectories(src)
-    nFolders = Array.GetItemCount(folders)
-    iFolders = Array.GetAllIndices(folders)
-    For j = 1 To nFolders
-      src = folders[iFolders[j]]
-      GenDoc()
-    EndFor
+ReadSettings()
+Form()
+While "True"
+  If buttonClicked Then
+    msg = ""
+    settings["src"] = Controls.GetTextBoxText(tboxSrc)
+    settings["out"] = Controls.GetTextBoxText(tboxOut)
+    dir = settings["out"]
+    File_DirectoryExists()
+    If Not[exists] Then
+      msg = "Folder " + dir + " created." + CRLF
+      File.CreateDirectory(dir)
+    EndIf 
+    ofile = settings["out"] + "\index.html"
+    Header()
+    src = settings["src"]
+    GenDoc()
+    If findSub Then
+      folders = File.GetDirectories(src)
+      nFolders = Array.GetItemCount(folders)
+      iFolders = Array.GetAllIndices(folders)
+      For j = 1 To nFolders
+        src = folders[iFolders[j]]
+        GenDoc()
+      EndFor
+    EndIf
+    Footer()
+    msg = msg + "Output " + ofile + " generated." + CRLF
+    WriteSettings()
+    msg = msg + "Settings " + settingsFile + " saved."
+    Shapes.SetText(txtMsg, msg)
+    buttonClicked = "False"
+  Else
+    Program.Delay(200)
   EndIf
-  Footer()
-EndIf
+EndWhile
+Sub Form
+  ''' Draw input form
+  gw = 598
+  gh = 428
+  GraphicsWindow.Width = gw
+  GraphicsWindow.Height = gh
+  GraphicsWindow.BackgroundColor = "LightGray"
+  GraphicsWindow.BrushColor = "Black"
+  fs = 16
+  GraphicsWindow.FontSize = fs
+  y = 10
+  GraphicsWindow.DrawText(10, y, "SBDoc - Small Basic Document Generator")
+  y = y + fs * 2
+  fs = 12
+  GraphicsWindow.FontSize = fs
+  GraphicsWindow.DrawText(10, y, "Version " + ver)
+  y = y + fs * 2
+  GraphicsWindow.DrawText(10, y, "Source Folder")
+  tboxSrc = Controls.AddTextBox(100, y - 3)
+  Controls.SetSize(tboxSrc, 480, 20)
+  y = y + fs * 2
+  Controls.SetTextBoxText(tboxSrc, settings["src"])
+  GraphicsWindow.DrawText(10, y, "Output Folder")
+  tboxOut = Controls.AddTextBox(100, y - 3)
+  Controls.SetSize(tboxOut, 480, 20)
+  Controls.SetTextBoxText(tboxOut, settings["out"])
+  y = y + fs * 2
+  Controls.AddButton("Run", 10, y)
+  Controls.ButtonClicked = OnButtonClicked
+  findSub = "False"
+  msg = "Usage:" + CRLF
+  msg = msg + "Input source and output folder names and push [Run] button."
+  txtMsg = Shapes.AddText(msg)
+  y = y + fs * 3
+  Shapes.Move(txtMsg, 10, y)
+EndSub
+Sub OnButtonClicked
+  ''' Button event handler
+  buttonClicked = "True"
+EndSub
 Sub Footer
   ''' Generate footer
   ''' param ofile - output file
@@ -40,37 +95,24 @@ Sub Footer
   html = html + LT + "/html>" + CRLF
   File.AppendContents(ofile, html)
 EndSub
-Sub GetArgs
-  ''' Get arguments
-  ''' return source - source folder
-  ''' return dest - destination folder
-  ''' return findSub - "True" to search sub folders
-  ''' return showHelp - "True" to show help 
-  nArg = Program.ArgumentCount
-  showHelp = "False"
-  source = ""
-  dest = ""
-  findSub = "False"
-  For i = 1 To nArg
-    arg = Program.GetArgument(i)
-    If Text.ConvertToUpperCase(arg) = "/O" Then
-      If i < nArg Then
-        i = i + 1
-        dest = Program.GetArgument(i)
-      Else
-        showHelp = "True"
-      EndIf
-    ElseIf Text.ConvertToUpperCase(arg) = "/S" Then
-      findSub = "True" 
-    ElseIf source = "" Then
-      source = arg
-    Else
-      showHelp = "True"
-    EndIf
-  EndFor
-  If source = "" Or dest = "" Then
-    showHelp = "True"
+Sub ReadSettings
+  ''' Read settings
+  ''' return settingsFile - settings file path
+  ''' return settings - array for settings
+  settingsFile = File.GetSettingsFilePath()
+  settings = File.ReadContents(settingsFile)
+  If settings["src"] = "" Then
+    settings["src"] = Program.Directory
   EndIf
+  If settings["out"] = "" Then
+    settings["out"] = Program.Directory + "\out"
+  EndIf
+EndSub
+Sub WriteSettings
+  ''' Write settings
+  ''' param settingsFile - settings file path
+  ''' param settings - array for settings
+  File.WriteContents(settingsFile, settings)
 EndSub
 Sub GenDoc
   ''' Generate documents in a folder
@@ -83,7 +125,6 @@ Sub GenDoc
     ifile = files[iFiles[i]]
     lfile = Text.ConvertToLowerCase(ifile)
     If Text.EndsWith(lfile, ".sb") Or Text.EndsWith(lfile, ".smallbasic") Then 
-      TextWindow.WriteLine(ifile)
       html = LT + "h1>" + ifile + LT + "/h1>" + CRLF
       buf = File.ReadContents(ifile)
       p = 1
@@ -91,14 +132,10 @@ Sub GenDoc
       While Not[eof]
         IsDocument()
         If match Then
-          TextWindow.ForegroundColor = "Green"
-          TextWindow.WriteLine(doc)
           html = html + doc + LT + "br>" + CRLF
-          TextWindow.ForegroundColor = "Gray"
         Else
           IsSub()
           If match Then
-            TextWindow.WriteLine(line)
             html = html + LT + "h2>" + line + LT + "/h2>" + CRLF
           EndIf
         EndIf
@@ -119,18 +156,10 @@ Sub Header
   html = html + " href=" + WQ + "style.css" + WQ + ">" + CRLF
   html = html + LT + "/head>" + CRLF
   html = html + LT + "body>" + CRLF
-  File.WriteContents(ofile, html)
-EndSub
-Sub Help
-  ''' Show help
-  TextWindow.WriteLine("Genarates Small Basic Document as HTML files." + CRLF)
-  TextWindow.WriteLine("SBDoc [/S] source /O dest" + CRLF)
-  TextWindow.WriteLine("  /S      Searches sub folders.")
-  TextWindow.WriteLine("  source  Source folder.")
-  TextWindow.WriteLine("  /O dest Destination folder." + CRLF)
+  result = File.WriteContents(ofile, html)
 EndSub
 Sub IsSub
-  ''' Check wheter the line is a subroutine
+  ''' Check whether the line is a subroutine
   match = "False"
   If Text.StartsWith(Text.ConvertToLowerCase(line), "sub ") Then
     match = "True"
@@ -144,7 +173,7 @@ Sub IsDocument
   While Text.GetSubText(line, _p, 1) = " "
     _p = _p + 1
   EndWhile
-  cmark = "'"
+  cmark = "'''"
   If Text.StartsWith(Text.GetSubTextToEnd(line, _p), cmark) Then
     _p = _p + Text.GetLength(cmark)
     While Text.GetSubText(line, _p, 1) = "'"
@@ -156,7 +185,18 @@ Sub IsDocument
     doc = Text.GetSubTextToEnd(line, _p)
     match = "True"
   EndIf
-EndSub  
+EndSub
+Sub File_DirectoryExists
+  ''' File | check if the directory exists
+  ''' param dir
+  ''' return exists
+  files = File.GetFiles(dir)
+  If files = "FAILED" Then
+    exists = "False"
+  Else
+    exists = "True"
+  EndIf
+EndSub
 Sub File_ReadLine
   ''' File | read line from buf
   ''' param buf - buffer
