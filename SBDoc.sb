@@ -1,9 +1,10 @@
 ''' SBDoc - Small Basic Document Generator
-''' Version 0.3b
+''' Version 0.4b
 ''' Copyright © 2016 Nonki Takahashi.  The MIT License.
-''' Program ID NPW862-0
+''' Last update 2016-05-01
+''' Program ID NPW862-1
 '
-ver = "0.3b"
+ver = "0.4b"
 GraphicsWindow.Title = "SBDoc " + ver
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 WQ = Text.GetCharacter(34)
@@ -136,7 +137,7 @@ Sub GenDoc
         Else
           IsSub()
           If match Then
-            html = html + LT + "h2>" + line + LT + "/h2>" + CRLF
+            html = html + LT + "h2>Subroutine " + name + LT + "/h2>" + CRLF
           EndIf
         EndIf
         File_ReadLine()
@@ -160,8 +161,10 @@ Sub Header
 EndSub
 Sub IsSub
   ''' Check whether the line is a subroutine
+  ''' return name - subroutine name
   match = "False"
   If Text.StartsWith(Text.ConvertToLowerCase(line), "sub ") Then
+    name = Text.GetSubTextToEnd(line, 5)
     match = "True"
   EndIf
 EndSub
