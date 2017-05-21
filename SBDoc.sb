@@ -1,15 +1,13 @@
-''' SBDoc - Small Basic Document Generator
-''' Version 0.4b
-''' Copyright © 2016 Nonki Takahashi.  The MIT License.
-''' Last update 2016-05-01
-''' Program ID NPW862-1
-'
-ver = "0.4b"
+' SBDoc - Small Basic Document Generator
+' Version 0.5b
+' Copyright © 2016-2017 Nonki Takahashi.  The MIT License.
+' Last update 2017-05-21
+' Program ID NPW862-2
+' Repository https://github.com/nonkit/SBDoc
+
+ver = "0.5b"
 GraphicsWindow.Title = "SBDoc " + ver
-CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
-WQ = Text.GetCharacter(34)
-LT = "<"
-Not = "False=True;True=False;"
+Init()
 ReadSettings()
 Form()
 While "True"
@@ -46,8 +44,32 @@ While "True"
     Program.Delay(200)
   EndIf
 EndWhile
+
+Sub Footer
+  ' Generate footer
+  ' param ofile - output file
+  yyyy = Clock.Year
+  mm = Clock.Month
+  If mm < 10 Then
+    mm = Text.Append(0, mm)
+  EndIf
+  dd = Clock.Day
+  If dd < 10 Then
+    dd = Text.Append(0, dd)
+  EndIf
+  html = LT + "hr>" + CRLF
+  html = html + LT + "p>This document is created by "
+  html = html + LT + "a href=" + WQ + "https://nonkit.github.io/SBDoc/"
+  html = html + WQ + ">SBDoc" + LT + "/a> " + ver
+  html = html + " on " + yyyy + "-" + mm + "-" + dd + "." + CRLF
+  html = html + LT + "/p>" + CRLF
+  html = html + LT + "/body>" + CRLF
+  html = html + LT + "/html>" + CRLF
+  File.AppendContents(ofile, html)
+EndSub
+
 Sub Form
-  ''' Draw input form
+  ' Draw input form
   gw = 598
   gh = 428
   GraphicsWindow.Width = gw
@@ -82,43 +104,11 @@ Sub Form
   y = y + fs * 3
   Shapes.Move(txtMsg, 10, y)
 EndSub
-Sub OnButtonClicked
-  ''' Button event handler
-  buttonClicked = "True"
-EndSub
-Sub Footer
-  ''' Generate footer
-  ''' param ofile - output file
-  html = LT + "hr>" + CRLF
-  html = html + LT + "p>This document is created by SBDoc " + ver + "." + CRLF
-  html = html + LT + "/p>" + CRLF
-  html = html + LT + "/body>" + CRLF
-  html = html + LT + "/html>" + CRLF
-  File.AppendContents(ofile, html)
-EndSub
-Sub ReadSettings
-  ''' Read settings
-  ''' return settingsFile - settings file path
-  ''' return settings - array for settings
-  settingsFile = File.GetSettingsFilePath()
-  settings = File.ReadContents(settingsFile)
-  If settings["src"] = "" Then
-    settings["src"] = Program.Directory
-  EndIf
-  If settings["out"] = "" Then
-    settings["out"] = Program.Directory + "\out"
-  EndIf
-EndSub
-Sub WriteSettings
-  ''' Write settings
-  ''' param settingsFile - settings file path
-  ''' param settings - array for settings
-  File.WriteContents(settingsFile, settings)
-EndSub
+
 Sub GenDoc
-  ''' Generate documents in a folder
-  ''' param ofile - output filename
-  ''' param src - source folder
+  ' Generate documents in a folder
+  ' param ofile - output filename
+  ' param src - source folder
   files = File.GetFiles(src)
   nFiles = Array.GetItemCount(files)
   iFiles = Array.GetAllIndices(files)
@@ -130,6 +120,44 @@ Sub GenDoc
       buf = File.ReadContents(ifile)
       p = 1
       File_ReadLine()
+      top = "True"
+      info = "True"
+      While Not[eof] And info
+        IsKeyword()
+        If match Then
+          If top Then
+            html = html + LT + "h2>Program Information" + LT + "/h2>" + CRLF
+            html = html + LT + "table>" + CRLF
+            top = "False"
+          EndIf
+          html = html + LT + "tr>" + LT + "td>"
+          html = html + LT + "b>
+          html = html + keyword[k]
+          html = html + LT + "/b>" + LT + "/td>"
+          html = html + LT + "td>"
+          If keyword[k] = "Repository" Then
+            html = html + LT + "a href=" + WQ
+            html = html + doc + WQ + ">"
+          EndIf
+          If keyword[k] = "Program ID" Then
+            html = html + LT + "a href=" + WQ
+            html = html + "http://smallbasic.com/program/?" + doc + WQ + ">"
+          EndIf
+          html = html + doc
+          If keyword[k] = "Last update" Or keyword[k] = "Program ID" Then
+            html = html + LT + "/a>"
+          EndIf
+          html = html + LT + "/td>" + LT + "tr>" + CRLF
+        Else
+          info = "False"
+        EndIf
+        File_ReadLine()
+      EndWhile
+      If Not[top] Then
+        html = html + LT + "/table>" + CRLF
+      EndIf
+      html = html + LT + "h2>Subroutines" + LT + "/h2>" + CRLF
+      top = "True"
       While Not[eof]
         IsDocument()
         If match Then
@@ -137,7 +165,14 @@ Sub GenDoc
         Else
           IsSub()
           If match Then
-            html = html + LT + "h2>Subroutine " + name + LT + "/h2>" + CRLF
+            If top Then
+              top = "False"
+            Else
+              html = html + LT + "hr>" + CRLF
+            EndIf
+            html = html + LT + "img src=" + WQ + "img/IntellisenseSubroutine.png"
+            html = html + WQ + " width=" + WQ + "64" + WQ + ">"
+            html = html + LT + "h3> " + name + "()" + LT + "/h3>" + CRLF
           EndIf
         EndIf
         File_ReadLine()
@@ -146,9 +181,10 @@ Sub GenDoc
     EndIf
   EndFor
 EndSub
+
 Sub Header
-  ''' Generate header
-  ''' param ofile - output file
+  ' Generate header
+  ' param ofile - output file
   html = LT + "!DOCTYPE html>" + CRLF
   html = html + LT + "html>" + CRLF
   html = html + LT + "head>" + CRLF
@@ -159,24 +195,27 @@ Sub Header
   html = html + LT + "body>" + CRLF
   result = File.WriteContents(ofile, html)
 EndSub
-Sub IsSub
-  ''' Check whether the line is a subroutine
-  ''' return name - subroutine name
-  match = "False"
-  If Text.StartsWith(Text.ConvertToLowerCase(line), "sub ") Then
-    name = Text.GetSubTextToEnd(line, 5)
-    match = "True"
-  EndIf
+
+Sub Init
+  ' Initialize varibles
+  CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+  WQ = Text.GetCharacter(34)
+  LT = "<"
+  Not = "False=True;True=False;"
+  keyword = "1=Title;2=Version;3=Copyright;4=Repository;5=Challenge;"
+  keyword = keyword + "6=Program ID;7=Last update;8=param;9=return;"
 EndSub
+
 Sub IsDocument
-  ''' Check whether the line is a document
-  ''' return doc
+  ' Check whether the line is a document
+  ' return doc
   match = "False"
+  doc = ""
   _p = 1
   While Text.GetSubText(line, _p, 1) = " "
     _p = _p + 1
   EndWhile
-  cmark = "'''"
+  cmark = "'"
   If Text.StartsWith(Text.GetSubTextToEnd(line, _p), cmark) Then
     _p = _p + Text.GetLength(cmark)
     While Text.GetSubText(line, _p, 1) = "'"
@@ -189,10 +228,91 @@ Sub IsDocument
     match = "True"
   EndIf
 EndSub
+
+Sub IsKeyword
+  ' Check whether the line starts with a keyword
+  ' return k - index of the keyword
+  ' return doc
+  ' return match - "True" if keyword
+  match = "False"
+  doc = ""
+  _p = 1
+  While Text.GetSubText(line, _p, 1) = " "
+    _p = _p + 1
+  EndWhile
+  cmark = "'"
+  If Text.StartsWith(Text.GetSubTextToEnd(line, _p), cmark) Then
+    _p = _p + Text.GetLength(cmark)
+    While Text.GetSubText(line, _p, 1) = "'"
+      _p = _p + 1
+    EndWhile
+    While Text.GetSubText(line, _p, 1) = " "
+      _p = _p + 1
+    EndWhile
+    ldoc = Text.ConvertToLowerCase(Text.GetSubTextToEnd(line, _p))
+    _n = Array.GetItemCount(keyword)
+    For _k = 1 To _n
+      lkw = Text.ConvertToLowerCase(keyword[_k])
+      If Text.StartsWith(ldoc, lkw) Then
+        _p = _p + Text.GetLength(lkw)
+        While Text.GetSubText(line, _p, 1) = " "
+          _p = _p + 1
+        EndWhile
+        k = _k
+        _k = _n
+        doc = Text.GetSubTextToEnd(line, _p)
+        match = "True"
+      EndIf
+    EndFor
+    If Not[match] And top Then
+      k = 1 ' Title
+      doc = Text.GetSubTextToEnd(line, _p)
+      match = "True"
+    EndIf     
+  EndIf
+EndSub
+
+Sub IsSub
+  ' Check whether the line is a subroutine
+  ' return name - subroutine name
+  ' return match - "True" if subroutine
+  match = "False"
+  If Text.StartsWith(Text.ConvertToLowerCase(line), "sub ") Then
+    name = Text.GetSubTextToEnd(line, 5)
+    match = "True"
+  EndIf
+EndSub
+
+Sub OnButtonClicked
+  ' Button event handler
+  buttonClicked = "True"
+EndSub
+
+Sub ReadSettings
+  ' Read settings
+  ' return settingsFile - settings file path
+  ' return settings - array for settings
+  settingsFile = File.GetSettingsFilePath()
+  settings = File.ReadContents(settingsFile)
+  If settings["src"] = "" Then
+    settings["src"] = Program.Directory
+  EndIf
+  If settings["out"] = "" Then
+    settings["out"] = Program.Directory + "\out"
+  EndIf
+EndSub
+
+Sub WriteSettings
+  ' Write settings
+  ' param settingsFile - settings file path
+  ' param settings - array for settings
+  File.WriteContents(settingsFile, settings)
+EndSub
+
 Sub File_DirectoryExists
-  ''' File | check if the directory exists
-  ''' param dir
-  ''' return exists
+  ' File | check if the directory exists
+  ' param dir
+  ' return exists
   files = File.GetFiles(dir)
   If files = "FAILED" Then
     exists = "False"
@@ -200,13 +320,14 @@ Sub File_DirectoryExists
     exists = "True"
   EndIf
 EndSub
+
 Sub File_ReadLine
-  ''' File | read line from buf
-  ''' param buf - buffer
-  ''' param p - pointer to buffer
-  ''' param eof - "True" if end of file
-  ''' return line - line
-  ''' return p - updated pointer to buffer
+  ' File | read line from buf
+  ' param buf - buffer
+  ' param p - pointer to buffer
+  ' param eof - "True" if end of file
+  ' return line - line
+  ' return p - updated pointer to buffer
   nl = Text.GetIndexOf(Text.GetSubTextToEnd(buf, p), CRLF)
   If 0 < nl Then
     line = Text.GetSubText(buf, p, nl - 1)
@@ -217,3 +338,4 @@ Sub File_ReadLine
     eof = "True"
   EndIf
 EndSub
+    

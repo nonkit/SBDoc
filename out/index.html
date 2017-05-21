@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>C:\Users\Nonki\OneDrive\Documents\SmallBasic\SBDoc\SBDoc.sb</h1>
+<h2>Program Information</h2>
+<table>
+<tr><td><b>Title</b></td><td>SBDoc - Small Basic Document Generator</td><tr>
+<tr><td><b>Version</b></td><td>0.5b</td><tr>
+<tr><td><b>Copyright</b></td><td>© 2016-2017 Nonki Takahashi.  The MIT License.</td><tr>
+<tr><td><b>Last update</b></td><td>2017-05-21</a></td><tr>
+<tr><td><b>Program ID</b></td><td><a href="http://smallbasic.com/program/?NPW862-2">NPW862-2</a></td><tr>
+<tr><td><b>Repository</b></td><td><a href="https://github.com/nonkit/SBDoc">https://github.com/nonkit/SBDoc</td><tr>
+</table>
+<h2>Subroutines</h2>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> Footer()</h3>
+Generate footer<br>
+param ofile - output file<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> Form()</h3>
+Draw input form<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> GenDoc()</h3>
+Generate documents in a folder<br>
+param ofile - output filename<br>
+param src - source folder<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> Header()</h3>
+Generate header<br>
+param ofile - output file<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> Init()</h3>
+Initialize varibles<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> IsDocument()</h3>
+Check whether the line is a document<br>
+return doc<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> IsKeyword()</h3>
+Check whether the line starts with a keyword<br>
+return k - index of the keyword<br>
+return doc<br>
+return match - "True" if keyword<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> IsSub()</h3>
+Check whether the line is a subroutine<br>
+return name - subroutine name<br>
+return match - "True" if subroutine<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> OnButtonClicked()</h3>
+Button event handler<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> ReadSettings()</h3>
+Read settings<br>
+return settingsFile - settings file path<br>
+return settings - array for settings<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> WriteSettings()</h3>
+Write settings<br>
+param settingsFile - settings file path<br>
+param settings - array for settings<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> File_DirectoryExists()</h3>
+File | check if the directory exists<br>
+param dir<br>
+return exists<br>
+<hr>
+<img src="img/IntellisenseSubroutine.png" width="64"><h3> File_ReadLine()</h3>
+File | read line from buf<br>
+param buf - buffer<br>
+param p - pointer to buffer<br>
+param eof - "True" if end of file<br>
+return line - line<br>
+return p - updated pointer to buffer<br>
+
+<hr>
+<p>This document is created by <a href="https://nonkit.github.io/SBDoc/">SBDoc</a> 0.5b on 2017-05-21.
+</p>
+</body>
+</html>
+

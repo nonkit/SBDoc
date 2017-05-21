@@ -1,0 +1,14 @@
+﻿@charset "UTF-8";
+
+body {
+  font-family: "Segoe UI";
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid gray;
+  padding: 4px;
+}
