@@ -2,7 +2,7 @@
 ' Version 0.5b
 ' Copyright © 2016-2017 Nonki Takahashi.  The MIT License.
 ' Last update 2017-05-21
-' Program ID NPW862-2
+' Program ID NPW862-0
 ' Repository https://github.com/nonkit/SBDoc
 
 ver = "0.5b"
@@ -338,4 +338,3 @@ Sub File_ReadLine
     eof = "True"
   EndIf
 EndSub
-    
